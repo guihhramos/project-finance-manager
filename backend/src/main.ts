@@ -4,6 +4,8 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.setGlobalPrefix('api');
+
   // ESTA LINHA É A QUE ABRE O PORTÃO PARA O FRONTEND
   app.enableCors({
     origin: '*', 
@@ -11,7 +13,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app.listen(3000);
+  await app.listen(process.env.PORT || 3000);
   console.log('Servidor a correr na porta 3000!');
 }
 bootstrap();
