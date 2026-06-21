@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { ArrowLeft, Building2, Save } from 'lucide-react';
+import { ArrowLeft, Building2, Save, PlusCircle } from 'lucide-react';
 
 interface Category {
     id: string;
@@ -10,12 +10,17 @@ interface Category {
 }
 
 export function NewTransaction() {
-    const [title, setTitle] = useState(''); // Representará a Justificativa/Descrição interna
+    const [title, setTitle] = useState('');
     const [amount, setAmount] = useState('');
-    const [type, setType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE'); // Padrão corporativo geralmente inicia em despesa
+    const [type, setType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE');
     const [categoryId, setCategoryId] = useState('');
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [categories, setCategories] = useState<Category[]>([]);
+    
+    // Novos estados para controlar a criação de categorias
+    const [isAddingCategory, setIsAddingCategory] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -23,8 +28,13 @@ export function NewTransaction() {
             try {
                 const response = await api.get('/categories');
                 setCategories(response.data);
-                if (response.data.length > 0) {
-                    setCategoryId(response.data[0].id);
+                
+                // Seleciona a primeira categoria disponível do tipo atual, se houver
+                const defaultCat = response.data.find((c: Category) => c.type === 'EXPENSE');
+                if (defaultCat) {
+                    setCategoryId(defaultCat.id);
+                } else {
+                    setIsAddingCategory(true); // Se não tem nenhuma, força a criar
                 }
             } catch (err) {
                 console.error('Erro ao carregar plano de contas/categorias', err);
@@ -33,27 +43,39 @@ export function NewTransaction() {
         loadCategories();
     }, []);
 
+    // Quando o usuário troca entre Receita/Despesa, reseta a categoria selecionada
+    useEffect(() => {
+        const firstOfNewType = categories.find(c => c.type === type);
+        if (firstOfNewType) {
+            setCategoryId(firstOfNewType.id);
+            setIsAddingCategory(false);
+        } else {
+            setCategoryId('');
+            setIsAddingCategory(true);
+        }
+    }, [type, categories]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         try {
             let finalCategoryId = categoryId;
 
-            // Se a empresa ainda não tiver as categorias corporativas, o MVP cria a correta sob demanda
-            if (categories.length === 0) {
-                const defaultName = type === 'INCOME' ? 'Receitas de Clientes' : 'Despesas Operacionais';
+            // Se o usuário escolheu criar uma categoria nova, salvamos ela primeiro no backend
+            if (isAddingCategory && newCategoryName.trim() !== '') {
                 const newCat = await api.post('/categories', {
-                    name: defaultName,
+                    name: newCategoryName,
                     type: type
                 });
                 finalCategoryId = newCat.data.id;
             }
             
+            // Depois, cria a transação com o ID da categoria (nova ou existente)
             await api.post('/transactions', {
                 title,
                 amount: Number(amount),
                 type,
-                date: new Date(date).toISOString(), // Isto garante que a string vira data real
+                date: new Date(date).toISOString(),
                 categoryId: finalCategoryId
             });
 
@@ -61,15 +83,10 @@ export function NewTransaction() {
             navigate('/dashboard');
         } catch (error: any) {
             console.error(error);
-            
-            // Captura a mensagem de erro específica enviada pelo NestJS
             const apiErrorMessage = error.response?.data?.message;
-
             if (apiErrorMessage) {
-                // Exibe exatamente: "Operação bloqueada: Saldo insuficiente para realizar esta despesa."
                 alert(apiErrorMessage); 
             } else {
-                // Fallback caso seja outro tipo de erro de rede ou servidor
                 alert('Falha ao registrar lançamento corporativo.');
             }
         }
@@ -143,25 +160,52 @@ export function NewTransaction() {
                         </select>
                     </div>
 
-                    {categories.length > 0 && (
-                        <div>
-                            <label style={labelStyle}>Categoria / Centro de Custo</label>
-                            <select
-                                value={categoryId}
-                                onChange={(e) => setCategoryId(e.target.value)}
-                                style={inputStyle}
-                            >
-                                {categories
-                                    .filter(cat => cat.type === type)
-                                    .map(cat => (
-                                        <option key={cat.id} value={cat.id} style={{ backgroundColor: '#1E293B' }}>
-                                            {cat.name}
-                                        </option>
-                                    ))
+                    {/* SEÇÃO DA CATEGORIA DINÂMICA */}
+                    <div>
+                        <label style={labelStyle}>Categoria / Centro de Custo</label>
+                        <select
+                            value={isAddingCategory ? 'NEW' : categoryId}
+                            onChange={(e) => {
+                                if (e.target.value === 'NEW') {
+                                    setIsAddingCategory(true);
+                                    setCategoryId('');
+                                } else {
+                                    setIsAddingCategory(false);
+                                    setCategoryId(e.target.value);
                                 }
-                            </select>
-                        </div>
-                    )}
+                            }}
+                            style={inputStyle}
+                        >
+                            {/* Lista as categorias que já existem no banco para o tipo selecionado */}
+                            {categories
+                                .filter(cat => cat.type === type)
+                                .map(cat => (
+                                    <option key={cat.id} value={cat.id} style={{ backgroundColor: '#1E293B' }}>
+                                        {cat.name}
+                                    </option>
+                                ))
+                            }
+                            {/* A opção mágica que libera o input de texto */}
+                            <option value="NEW" style={{ backgroundColor: '#0F172A', color: '#3B82F6', fontWeight: 'bold' }}>
+                                + Criar nova categoria...
+                            </option>
+                        </select>
+
+                        {/* Se ele escolheu "+ Criar nova categoria", mostra o input */}
+                        {isAddingCategory && (
+                            <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <PlusCircle size={18} color="#3B82F6" />
+                                <input
+                                    type="text"
+                                    placeholder="Digite o nome da nova categoria (ex: Transporte)"
+                                    value={newCategoryName}
+                                    onChange={(e) => setNewCategoryName(e.target.value)}
+                                    required={isAddingCategory}
+                                    style={{ ...inputStyle, border: '1px dashed #3B82F6', backgroundColor: '#1E293B' }}
+                                />
+                            </div>
+                        )}
+                    </div>
 
                     <button type="submit" style={buttonStyle}>
                         <Save size={18} />
@@ -176,4 +220,4 @@ export function NewTransaction() {
 
 const labelStyle = { display: 'block', fontSize: '13px', fontWeight: '500', color: '#94A3B8', marginBottom: '8px' };
 const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '6px', border: '1px solid #334155', backgroundColor: '#0F172A', color: '#F8FAFC', fontSize: '14px', outline: 'none' };
-const buttonStyle = { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '14px', cursor: 'pointer', backgroundColor: '#3B82F6', color: '#F8FAFC', border: 'none', borderRadius: '6px', fontSize: '15px', fontWeight: '500' };
+const buttonStyle = { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '14px', cursor: 'pointer', backgroundColor: '#3B82F6', color: '#F8FAFC', border: 'none', borderRadius: '6px', fontSize: '15px', fontWeight: '500', marginTop: '10px' };
