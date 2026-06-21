@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
@@ -9,6 +9,18 @@ export class TransactionsService {
   constructor(private prisma: PrismaService) { }
 
   async create(userId: string, createTransactionDto: CreateTransactionDto) {
+    // 1. Regra de Negócio: Se for uma despesa, valida se há saldo suficiente
+    if (createTransactionDto.type === 'EXPENSE') {
+      const dashboard = await this.getDashboard(userId);
+
+      if (dashboard.balance < createTransactionDto.amount) {
+        throw new BadRequestException(
+          'Operação bloqueada: Saldo insuficiente para realizar esta despesa.'
+        );
+      }
+    }
+
+    // 2. Se passou na validação ou se for uma receita (INCOME), cria normalmente
     return this.prisma.transaction.create({
       data: {
         title: createTransactionDto.title,
@@ -21,7 +33,7 @@ export class TransactionsService {
     });
   }
 
-  // O TEU CÉREBRO FINANCEIRO VOLTOU!
+  // O TEU CÉREBRA FINANCEIRO VOLTOU!
   async getDashboard(userId: string) {
     const transactions = await this.prisma.transaction.findMany({
       where: { userId },
