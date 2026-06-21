@@ -59,9 +59,19 @@ export function NewTransaction() {
 
             alert('Movimentação lançada no fluxo de caixa com sucesso!');
             navigate('/dashboard');
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert('Falha ao registrar lançamento corporativo.');
+            
+            // Captura a mensagem de erro específica enviada pelo NestJS
+            const apiErrorMessage = error.response?.data?.message;
+
+            if (apiErrorMessage) {
+                // Exibe exatamente: "Operação bloqueada: Saldo insuficiente para realizar esta despesa."
+                alert(apiErrorMessage); 
+            } else {
+                // Fallback caso seja outro tipo de erro de rede ou servidor
+                alert('Falha ao registrar lançamento corporativo.');
+            }
         }
     };
 
