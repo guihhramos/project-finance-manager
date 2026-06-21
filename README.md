@@ -406,3 +406,4 @@ O foco foi manter a solução simples, robusta e alinhada às necessidades do MV
 Guilherme Silva Ramos
 
 Desafio Técnico Full Stack — NestJS + React + PostgreSQL
+!
