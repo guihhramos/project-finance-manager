@@ -50,6 +50,7 @@
     "@types/node": "^22.10.2",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.2",
+    "@vercel/node": "^5.8.17",
     "dotenv": "^17.4.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",

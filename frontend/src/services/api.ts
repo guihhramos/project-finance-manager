@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Import } from 'lucide-react';
 
 // O Vite injeta variáveis de ambiente automaticamente.
 // import.meta.env.DEV é "true" quando você roda 'npm run dev'
@@ -7,11 +8,10 @@ import axios from 'axios';
 const isDevelopment = import.meta.env.DEV;
 
 export const api = axios.create({
-  // Em desenvolvimento, o React (5173) chama o NestJS (3000).
-  // Em produção, como estão no mesmo servidor, usa apenas '/api'.
-  baseURL: isDevelopment ? 'http://localhost:3000/api' : '/api',
-});
 
+  // Em produção, como estão no mesmo servidor, usa apenas '/api'.
+  baseURL: isDevelopment ? 'http://localhost:3000/api' : import.meta.env.VITE_API_URL,
+});
 // Mantemos o seu interceptor intacto para o token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('@FinanceManager:token');

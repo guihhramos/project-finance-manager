@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
-import { AppModule } from '..//app.module';
+import { AppModule } from '../app.module';
 
 const server = express();
 let ready: Promise<any> | null = null;
