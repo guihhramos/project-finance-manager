@@ -16,7 +16,6 @@ import { UsersModule } from './users/users.module';
       exclude: ['/api*'], // Protege as rotas do backend
     }),
     
-    // 2. Os teus módulos do AutoPrime Motors / Finance Manager
     PrismaModule,
     AuthModule,
     CategoriesModule,
