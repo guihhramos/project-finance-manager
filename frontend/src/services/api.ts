@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { Import } from 'lucide-react';
 
 // O Vite injeta variáveis de ambiente automaticamente.
 // import.meta.env.DEV é "true" quando você roda 'npm run dev'
