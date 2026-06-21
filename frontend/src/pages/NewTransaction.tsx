@@ -159,7 +159,6 @@ export function NewTransaction() {
                             <option value="INCOME" style={{ backgroundColor: '#1E293B' }}>Receita (Clientes / Aportes)</option>
                         </select>
                     </div>
-
                     {/* SEÇÃO DA CATEGORIA DINÂMICA */}
                     <div>
                         <label style={labelStyle}>Categoria / Centro de Custo</label>
@@ -197,7 +196,7 @@ export function NewTransaction() {
                                 <PlusCircle size={18} color="#3B82F6" />
                                 <input
                                     type="text"
-                                    placeholder="Digite o nome da nova categoria (ex: Transporte)"
+                                    placeholder="Digite o nome da nova categoria (ex: Folha de Pagamento)"
                                     value={newCategoryName}
                                     onChange={(e) => setNewCategoryName(e.target.value)}
                                     required={isAddingCategory}
