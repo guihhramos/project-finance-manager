@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { NewTransaction } from './pages/NewTransaction';
-import { Transactions } from './pages/Transactions'; // <--- IMPORTANTE: Adiciona esta linha
+import { Transactions } from './pages/Transactions';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
