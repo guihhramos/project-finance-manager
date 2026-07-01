@@ -29,7 +29,7 @@ function App() {
           } 
         />
 
-        {/* Rota do Extrato que acabámos de criar */}
+        {/* Rota do Extrato */}
         <Route 
           path="/transactions" 
           element={
