@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { Eye, EyeOff } from 'lucide-react'; // 1. Importamos os ícones
+import { Eye, EyeOff } from 'lucide-react';
 
 export function Login() {
     const [isLogin, setIsLogin] = useState(true);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false); // 2. Novo estado para o "olhinho"
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -33,7 +33,7 @@ export function Login() {
                 // 1. Envia os dados para a rota de criação do teu NestJS
                 await api.post('/users', { email, password });
 
-                // Mensagem amigável de sucesso
+                // Mensagem de sucesso
                 alert('Conta criada com sucesso! A entrar...');
 
                 // 2. Faz o login automático logo a seguir para o utilizador não ter de digitar tudo de novo
@@ -48,7 +48,7 @@ export function Login() {
         } catch (error: any) {
             console.error(error);
 
-            // Tratamento de erros inteligente
+           
             if (isLogin) {
                 alert('Erro ao fazer login. Verifica o teu e-mail e senha!');
             } else {
